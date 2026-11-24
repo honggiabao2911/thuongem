@@ -1,6 +1,32 @@
-import { Activity, Droplet, HeartPulse, Moon, TriangleAlert } from 'lucide-react'
+import { Activity, BatteryLow, Droplet, HeartPulse, Moon, Thermometer, TriangleAlert, Zap } from 'lucide-react'
+
+export const quickHealthTopics = ['Đau đầu', 'Sốt ở người lớn', 'Mệt mỏi kéo dài'] as const
 
 const topics = [
+  {
+    title: quickHealthTopics[0],
+    icon: Zap,
+    advice: 'Thử uống nước, ăn đúng bữa và nghỉ mắt khỏi màn hình. Ghi thời điểm bắt đầu, mức độ và triệu chứng đi kèm.',
+    followUp: 'Nên đi khám nếu đau đầu tái diễn hoặc nặng dần. Đi cấp cứu nếu cơn đau xuất hiện đột ngột và dữ dội, hoặc kèm yếu liệt, khó nói, lú lẫn, sốt cao và cứng cổ.',
+    url: 'https://www.nhs.uk/symptoms/headaches/',
+    source: 'NHS · Đau đầu',
+  },
+  {
+    title: quickHealthTopics[1],
+    icon: Thermometer,
+    advice: 'Có thể đo và ghi thân nhiệt. Ở người lớn, từ 38°C thường được coi là sốt. Nghỉ ngơi và uống đủ nước.',
+    followUp: 'Liên hệ cơ sở y tế nếu sốt không giảm hoặc nặng hơn dù đã chăm sóc tại nhà.',
+    url: 'https://www.nhs.uk/symptoms/fever-in-adults/',
+    source: 'NHS · Sốt ở người lớn',
+  },
+  {
+    title: quickHealthTopics[2],
+    icon: BatteryLow,
+    advice: 'Theo dõi giấc ngủ và thời gian thấy mệt. Thử giữ giờ ngủ đều và ăn uống cân bằng.',
+    followUp: 'Nên đi khám nếu mệt không rõ lý do trong vài tuần hoặc mệt ảnh hưởng đến sinh hoạt.',
+    url: 'https://www.nhs.uk/symptoms/tiredness-and-fatigue/',
+    source: 'NHS · Mệt mỏi kéo dài',
+  },
   {
     title: 'Đau bụng kinh',
     icon: Activity,
@@ -35,7 +61,7 @@ const topics = [
   },
 ]
 
-export function HealthGuide() {
+export function HealthGuide({ selected }: { selected?: string }) {
   return <div className="stack health-guide">
     <p className="muted">Chọn triệu chứng để xem cách chăm sóc và thời điểm cần đi khám.</p>
     <section className="health-alert" aria-labelledby="urgent-care">
@@ -46,7 +72,7 @@ export function HealthGuide() {
         <a href="https://www.nhs.uk/symptoms/pelvic-pain/" target="_blank" rel="noreferrer">NHS · Dấu hiệu cấp cứu</a>
       </div>
     </section>
-    {topics.map(({ title, icon: Icon, advice, followUp, url, source }) => <details className="health-topic" key={title}>
+    {topics.map(({ title, icon: Icon, advice, followUp, url, source }) => <details className="health-topic" key={title} open={selected === title || undefined}>
       <summary><Icon size={18} aria-hidden="true" /> {title}</summary>
       <div className="stack health-copy">
         <p>{advice}</p><p>{followUp}</p>

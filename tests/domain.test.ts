@@ -104,3 +104,12 @@ test('kiểm tra bản sao lưu từ chối cấu trúc sai, ngày tương lai v
   d.entries = [{ date: '2026-08-05', symptoms: [] }]
   assert.throws(() => checkBackup(d, now), /tương lai/)
 })
+
+test('một khoảng giữa hai kỳ cho phép ước tính ban đầu khi chưa nhập độ dài', () => {
+  const data = empty()
+  data.periods = [{ start: '2026-10-17', end: '2026-10-21' }, { start: '2026-11-16' }]
+  const p = prediction(data)
+  assert.equal(p.next, '2026-12-16')
+  assert.equal(p.initial, true)
+  assert.equal(p.ov, undefined)
+})

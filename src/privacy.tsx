@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Flower2, LockKeyhole } from 'lucide-react'
+import { Delete, LockKeyhole } from 'lucide-react'
+import { DaySticker } from './dayArt.tsx'
 import { Field } from './forms.tsx'
 
 const key = 'thuong-em:screen-lock:v1'
@@ -79,27 +80,57 @@ function PinField({ label, name }: { label: string; name: string }) {
     pattern="[0-9]{6}" required /></Field>
 }
 export function LockScreen({ privacy }: { privacy: Privacy }) {
+  const [entered, setEntered] = useState('')
+  const [status, setStatus] = useState('')
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const form = event.currentTarget
-    const pin = String(new FormData(form).get('pin'))
-    setBusy(true)
+  const enteredRef = useRef('')
+  const checking = useRef(false)
+  const digitRef = useRef<(key: string) => void>(() => {})
+  async function input(key: string) {
+    if (checking.current) return
+    const next = key === 'Backspace' ? enteredRef.current.slice(0, -1) : enteredRef.current + key
+    enteredRef.current = next
+    setEntered(next)
     setError('')
-    try { await privacy.unlock(pin) }
-    catch (e) { setError((e as Error).message); form.reset() }
-    finally { setBusy(false) }
+    if (next.length < 6) return
+    checking.current = true
+    setStatus('Đang kiểm tra mã PIN…')
+    try { await privacy.unlock(next) }
+    catch (error) { setError((error as Error).message) }
+    finally {
+      enteredRef.current = ''
+      setEntered('')
+      setStatus('')
+      checking.current = false
+    }
   }
+  digitRef.current = key => { void input(key) }
+  useEffect(() => {
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.altKey || event.metaKey || event.ctrlKey || event.repeat) return
+      if (/^\d$/.test(event.key) || event.key === 'Backspace') {
+        event.preventDefault()
+        digitRef.current(event.key)
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [])
   return <main className="shell lock-shell"><section className="card stack lock-card">
-    <div className="brand-icon big"><Flower2 /></div>
+    <div className="pin-art"><DaySticker kind="pouch" /><span><LockKeyhole size={20} /></span></div>
     <h1>Thương Em đã khóa</h1>
-    <p className="muted">Nhập mã PIN để mở nhật ký trên thiết bị này.</p>
-    <form className="stack" onSubmit={submit}>
-      <PinField label="Mã PIN" name="pin" />
-      {error && <p role="alert" className="notice error">{error}</p>}
-      <button className="primary" disabled={busy}><LockKeyhole size={18} /> Mở khóa</button>
-    </form>
+    <p className="muted">Chạm 6 chữ số để mở nhật ký.</p>
+    <div className="pin-dots" role="status" aria-label={'Đã nhập ' + entered.length + ' trên 6 số'}>
+      {Array.from({ length: 6 }, (_, index) => <span key={index} className={index < entered.length ? 'filled' : ''} />)}
+    </div>
+    <div className="pin-message">
+      {error && <p role="alert" className="small">{error}</p>}
+      {status && <p role="status" className="small">{status}</p>}
+    </div>
+    <div className="pin-pad" role="group" aria-label="Bàn phím mã PIN" aria-busy={Boolean(status)}>
+      {'1234567890'.split('').map(digit => <button key={digit} disabled={Boolean(status)} onClick={() => void input(digit)}>{digit}</button>)}
+      <button aria-label="Xóa số cuối" disabled={Boolean(status) || !entered} onClick={() => void input('Backspace')}><Delete size={23} /></button>
+    </div>
   </section></main>
 }
 export function PrivacySettings({ privacy }: { privacy: Privacy }) {

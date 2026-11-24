@@ -18,7 +18,7 @@ export const journal = z.object({
   mood: z.string().max(120).optional(), energy: z.enum(['Thấp', 'Vừa', 'Cao']).optional(),
   sleep: z.number().min(0).max(24).optional(), symptoms: z.array(z.string().max(60)).max(20),
   note: z.string().max(3000).optional(), lh: z.enum(['Âm tính', 'Dương tính', 'Không rõ']).optional(),
-  bbt: z.number().min(30).max(45).optional(),
+  bbt: z.number().min(30).max(45).optional(), temperature: z.number().min(30).max(45).optional(),
 })
 export const rule = z.object({
   id: z.string().regex(/^[a-zA-Z0-9-]{1,60}$/), time, days: z.array(weekday).min(1).max(7),
@@ -93,7 +93,7 @@ export function prediction(data: Data) {
   const spread = recent.length ? Math.max(...recent) - Math.min(...recent) : undefined
   const typical = recent.length ? median(recent) : undefined
   const initial = recent.length < 2
-  const basis = initial ? data.settings.cycle : typical
+  const basis = initial ? data.settings.cycle ?? typical : typical
   const next = last && basis ? add(last.start, Math.round(basis)) : undefined
   const days = list.flatMap(p => p.end ? [diff(p.start, p.end) + 1] : []).slice(-6)
   const duration = days.length ? Math.round(median(days)) : data.settings.duration

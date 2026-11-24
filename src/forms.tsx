@@ -30,7 +30,7 @@ export function EntryForm({ day, old, save, remove }: { day: string; old?: Entry
       await save(journal.parse({
         date: day, symptoms: f.getAll('symptom'), flow: str(f, 'flow') || undefined, pain: num(f, 'pain'),
         location: str(f, 'location'), mood: str(f, 'mood'), energy: str(f, 'energy') || undefined,
-        sleep: num(f, 'sleep'), note: str(f, 'note'), lh: str(f, 'lh') || undefined, bbt: num(f, 'bbt'),
+        sleep: num(f, 'sleep'), note: str(f, 'note'), lh: str(f, 'lh') || undefined, bbt: num(f, 'bbt'), temperature: num(f, 'temperature'),
       }))
     } catch { setError('Không lưu được. Hãy kiểm tra dữ liệu và thử lại.') }
   }
@@ -45,7 +45,10 @@ export function EntryForm({ day, old, save, remove }: { day: string; old?: Entry
       <Field label="Tâm trạng"><input name="mood" maxLength={120} defaultValue={old?.mood} /></Field>
       <Field label="Mức năng lượng"><select name="energy" defaultValue={old?.energy}>{choices(['Thấp', 'Vừa', 'Cao'])}</select></Field>
     </div>
-    <Field label="Giấc ngủ (giờ)"><input name="sleep" type="number" min="0" max="24" step=".1" defaultValue={old?.sleep} /></Field>
+    <div className="two">
+      <Field label="Giấc ngủ (giờ)"><input name="sleep" type="number" min="0" max="24" step=".1" defaultValue={old?.sleep} /></Field>
+      <Field label="Thân nhiệt khi thấy mệt (°C)"><input name="temperature" type="number" min="30" max="45" step=".1" defaultValue={old?.temperature === undefined ? undefined : Math.round(old.temperature * 10) / 10} /></Field>
+    </div>
     <fieldset><legend>Triệu chứng</legend><div className="symptom-grid">{[...new Set([...symptomIcons.keys(), ...(old?.symptoms ?? [])])].map(x => {
       const Icon = symptomIcons.get(x) ?? CirclePlus
       return <label className="symptom-tile" key={x}><input name="symptom" type="checkbox" value={x}

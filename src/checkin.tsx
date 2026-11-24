@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Activity, BatteryLow, Check, CloudRain, Droplet, Flame, Frown, Heart, Meh, Moon, Smile, Sparkles, Waves, Wind, Zap } from 'lucide-react'
+import { Activity, BatteryLow, Check, CloudRain, Droplet, Flame, Frown, Heart, Meh, Moon, Smile, Sparkles, Thermometer, Waves, Wind, Zap } from 'lucide-react'
 import type { Entry } from '../shared/domain.ts'
 import { journal } from '../shared/domain.ts'
 
@@ -7,6 +7,7 @@ export const symptomOptions = [
   ['Co thắt bụng', Activity], ['Đầy bụng', Wind], ['Đau đầu', Zap], ['Đau lưng', Flame],
   ['Căng ngực', Heart], ['Mệt mỏi', BatteryLow], ['Buồn nôn', Waves], ['Khó ngủ', Moon],
   ['Da nổi mụn', Sparkles], ['Táo bón', Activity], ['Tiêu chảy', Waves], ['Tiết dịch', Droplet],
+  ['Sốt', Thermometer], ['Chóng mặt', Wind], ['Ớn lạnh', Moon], ['Đau họng', Activity],
 ] as const
 const flowOptions = ['Không', 'Lấm tấm', 'Ít', 'Vừa', 'Nhiều'] as const
 const moods = [['Vui vẻ', Smile], ['Bình thường', Meh], ['Bồn chồn', Zap], ['Buồn', CloudRain], ['Cáu gắt', Frown], ['Thư thái', Heart]] as const

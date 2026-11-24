@@ -20,7 +20,7 @@ const subscriptionSchema = z.object({
 const registration = z.object({ code: z.string().max(128), subscription: subscriptionSchema })
 const update = z.object({ revision: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER), plan: planSchema })
 const types: Record<string, string> = {
-  '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png',
+  '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.webp': 'image/webp',
   '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml',
 }
 

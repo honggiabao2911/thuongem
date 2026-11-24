@@ -1232,3 +1232,156 @@ dialog .card p {
     padding-inline:8px;
   }
 }
+
+.day-sticker {
+  display:block;
+  width:var(--sticker-size, 70px);
+  height:var(--sticker-size, 70px);
+  border-radius:24%;
+  flex:none;
+  background-image:url('/day-stickers.webp');
+  background-size:200% 200%;
+}
+
+.sticker-warm { background-position:left top; }
+.sticker-flower { background-position:right top; }
+.sticker-pouch { background-position:left bottom; }
+.sticker-cup { background-position:right bottom; }
+
+.lock-card {
+  text-align:center;
+  gap:7px;
+  padding:clamp(16px,5vw,30px);
+}
+
+.pin-art {
+  position:relative;
+  justify-self:center;
+  margin-bottom:5px;
+  --sticker-size:clamp(66px,25vw,106px);
+}
+
+.pin-art > span:last-child {
+  display:grid;
+  place-items:center;
+  position:absolute;
+  bottom:-5px;
+  right:-9px;
+  width:36px;
+  height:36px;
+  color:var(--rose-deep);
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:50%;
+}
+
+.pin-dots {
+  display:flex;
+  gap:13px;
+  justify-content:center;
+  margin:8px 0 2px;
+}
+
+.pin-dots span {
+  width:13px;
+  height:13px;
+  border:1.5px solid var(--rose);
+  border-radius:50%;
+}
+
+.pin-dots .filled {
+  background:var(--rose);
+}
+
+.pin-message {
+  min-height:1.7rem;
+  color:var(--error);
+}
+
+.pin-pad {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  width:min(100%,288px);
+  margin-inline:auto;
+}
+
+.pin-pad button {
+  min-height:clamp(45px,8dvh,61px);
+  background:var(--bg);
+  border-radius:17px;
+  font-size:1.43rem;
+  font-variant-numeric:tabular-nums;
+  touch-action:manipulation;
+}
+
+.pin-pad button:nth-child(10) { grid-column:2; }
+.pin-pad button:last-child { grid-column:3; }
+
+.lock-shell {
+  padding-bottom:max(20px,env(safe-area-inset-bottom));
+}
+
+.calendar {
+  touch-action:pan-y;
+}
+
+.calendar-day .day-marks {
+  min-height:16px;
+  align-items:center;
+  --sticker-size:14px;
+}
+
+.calendar-day .day-marks .day-sticker {
+  border-radius:4px;
+}
+
+.calendar-day.current-day {
+  border-color:transparent;
+}
+
+.day-illustration {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:12px;
+  background:var(--rose-soft);
+  border-radius:16px;
+  color:var(--rose-deep);
+  --sticker-size:76px;
+}
+
+.ring-face .day-sticker {
+  --sticker-size:clamp(49px,17vw,90px);
+  border-radius:50%;
+}
+
+.health-front {
+  gap:8px;
+}
+
+.health-front > button {
+  background:transparent;
+  border:0;
+  padding:2px;
+}
+
+.health-links {
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+
+.health-links button {
+  border-radius:20px;
+  padding:8px 12px;
+  background:var(--paper);
+}
+
+@media(max-width:620px) {
+  .hero-actions button { flex:1 1 135px; }
+  .hero-copy h2 { font-size:clamp(1.2rem,5.2vw,1.85rem); }
+  .hero-content { align-items:flex-start; }
+  .week-card { padding-inline:7px; }
+  .calendar-day .day-marks { gap:1px; }
+}
