@@ -93,13 +93,17 @@ export function prediction(data: Data) {
   const spread = recent.length ? Math.max(...recent) - Math.min(...recent) : undefined
   const typical = recent.length ? median(recent) : undefined
   const initial = recent.length < 2
-  const basis = initial ? data.settings.cycle ?? typical : typical
-  const next = last && basis ? add(last.start, Math.round(basis)) : undefined
+  const recordedBasis = initial ? data.settings.cycle ?? typical : typical
+  const assumed = Boolean(last && recordedBasis === undefined)
+  const basis = Math.round(recordedBasis ?? 28)
+  const next = last ? add(last.start, basis) : undefined
   const days = list.flatMap(p => p.end ? [diff(p.start, p.end) + 1] : []).slice(-6)
   const duration = days.length ? Math.round(median(days)) : data.settings.duration
-  const ov = next && last && recent.length >= 3 && spread! <= 7 && diff(last.start, next) >= 21
+  const ovWindow = next && basis >= 21 && basis <= 35
+    ? { start: add(next, -16), end: add(next, -10) } : undefined
+  const ov = next && ovWindow && recent.length >= 3 && spread! <= 7
     ? add(next, -13) : undefined
-  return { last, lengths, recent, typical, spread, initial, next, duration, ov,
+  return { last, lengths, recent, typical, spread, initial, assumed, next, duration, ov, ovWindow,
     fertile: ov ? { start: add(next!, -21), end: add(next!, -9) } : undefined }
 }
 export function checkBackup(raw: unknown, now: number) {

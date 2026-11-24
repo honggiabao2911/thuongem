@@ -7,8 +7,8 @@ import { ApiError, preparePlan, randomToken, request, subscribe, supported } fro
 
 function signature(data: Data) {
   const { before, due, ov, journal, care, zone, quiet, detailed, paused } = data.settings
-  const { next, last, ov: estimate } = prediction(data)
-  return JSON.stringify([before, due, ov, journal, care, zone, quiet, detailed, paused, next, last?.start, estimate])
+  const { next, last, ov: estimate, assumed } = prediction(data)
+  return JSON.stringify([before, due, ov, journal, care, zone, quiet, detailed, paused, next, last?.start, estimate, assumed])
 }
 export function useDevice() {
   const [saved, setSaved] = useState<Saved>()

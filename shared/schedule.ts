@@ -47,7 +47,7 @@ export function makePlan(data: Data, now: number, includePaused = false): Plan {
   }
   const next = p.next
   const anchor = p.last?.start
-  if (next && anchor && next >= today) {
+  if (!p.assumed && next && anchor && next >= today) {
     if (s.before.enabled) for (const offset of new Set(s.before.offsets)) {
       const day = add(next, -offset)
       const at = instant(day, s.before.time, s.zone, s.quiet)

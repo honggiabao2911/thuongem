@@ -1,6 +1,6 @@
-const CACHE = "thuong-em-91d66eb4c2d499f4"
+const CACHE = "thuong-em-f9318061b968bdac"
 const BASE = "/thuongem/"
-const FILES = ["/thuongem/","/thuongem/apple-touch-icon.png","/thuongem/assets/index-DiKptcbo.js","/thuongem/assets/index-Oi6s9UWp.css","/thuongem/assets/noto-sans-latin-wght-normal-BYSzYMf3.woff2","/thuongem/assets/noto-sans-vietnamese-wght-normal-DLTJy58D.woff2","/thuongem/day-stickers.webp","/thuongem/icon-192.png","/thuongem/icon-512.png","/thuongem/icon-mask.png","/thuongem/index.html","/thuongem/manifest.webmanifest","/thuongem/noto-sans-license.txt"]
+const FILES = ["/thuongem/","/thuongem/apple-touch-icon.png","/thuongem/assets/index-BmXrMwii.js","/thuongem/assets/index-DbBH16jS.css","/thuongem/assets/noto-sans-latin-wght-normal-BYSzYMf3.woff2","/thuongem/assets/noto-sans-vietnamese-wght-normal-DLTJy58D.woff2","/thuongem/day-stickers.webp","/thuongem/icon-192.png","/thuongem/icon-512.png","/thuongem/icon-mask.png","/thuongem/index.html","/thuongem/manifest.webmanifest","/thuongem/noto-sans-license.txt"]
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES)))

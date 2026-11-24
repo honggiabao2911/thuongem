@@ -1385,3 +1385,46 @@ dialog .card p {
   .week-card { padding-inline:7px; }
   .calendar-day .day-marks { gap:1px; }
 }
+
+.calendar-day.ov-window .day-number {
+  background:var(--lavender);
+  color:var(--ink);
+  border:1px dashed var(--rose);
+}
+
+.forecast-summary {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+}
+
+.forecast-summary > button {
+  flex-direction:column;
+  justify-content:flex-start;
+  align-items:flex-start;
+  text-align:left;
+  gap:4px;
+  border-color:transparent;
+  background:var(--rose-soft);
+  padding:9px 10px;
+  font-size:.77rem;
+}
+
+.forecast-summary > button:nth-child(2) {
+  background:var(--lavender);
+}
+
+.forecast-summary strong {
+  line-height:1.4;
+}
+
+.forecast-note {
+  grid-column:1/-1;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:4px 8px;
+  color:var(--muted);
+  font-size:.79rem;
+}

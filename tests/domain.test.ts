@@ -27,11 +27,16 @@ test('không cho ngày sai, kỳ trùng, kỳ mở trước kỳ khác hoặc ng
 test('dữ liệu thiếu, dùng số ngày nhập và loại chu kỳ đang mở khỏi độ dài', () => {
   const d = empty()
   d.periods = [{ start: '2026-01-20' }]
-  assert.equal(prediction(d).next, undefined)
+  assert.equal(prediction(empty()).next, undefined)
+  assert.equal(prediction(d).next, '2026-02-17')
+  assert.equal(prediction(d).assumed, true)
+  assert.deepEqual(prediction(d).ovWindow, { start: '2026-02-01', end: '2026-02-07' })
+  assert.equal(makePlan(d, Date.parse('2026-01-21T00:00:00Z')).once.length, 0)
   d.settings.cycle = 31
   const p = prediction(d)
   assert.equal(p.next, '2026-02-20')
   assert.equal(p.initial, true)
+  assert.equal(p.assumed, false)
   assert.equal(p.ov, undefined)
   assert.deepEqual(p.lengths, [])
 })
