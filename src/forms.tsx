@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
-import { X, Save, Trash2 } from 'lucide-react'
+import { X, Save, Trash2, CirclePlus } from 'lucide-react'
 import { journal, settings, validatePeriods, vietnamZone } from '../shared/domain.ts'
 import type { Data, Entry, Period, Settings } from '../shared/domain.ts'
+import { symptomOptions } from './checkin.tsx'
 
 export const str = (form: FormData, key: string) => String(form.get(key) ?? '').trim()
 export const num = (form: FormData, key: string) => str(form, key) === '' ? undefined : Number(str(form, key))
@@ -16,7 +17,7 @@ export function Modal({ title, children, close }: { title: string; children: Rea
     {children}
   </dialog>
 }
-const symptomList = ['Đầy bụng', 'Đau đầu', 'Căng ngực', 'Đau lưng', 'Mệt mỏi', 'Buồn nôn']
+const symptomIcons = new Map<string, (typeof symptomOptions)[number][1]>(symptomOptions)
 function choices(items: string[]) {
   return <><option value="">Chưa ghi</option>{items.map(x => <option key={x}>{x}</option>)}</>
 }
@@ -45,8 +46,11 @@ export function EntryForm({ day, old, save, remove }: { day: string; old?: Entry
       <Field label="Mức năng lượng"><select name="energy" defaultValue={old?.energy}>{choices(['Thấp', 'Vừa', 'Cao'])}</select></Field>
     </div>
     <Field label="Giấc ngủ (giờ)"><input name="sleep" type="number" min="0" max="24" step=".1" defaultValue={old?.sleep} /></Field>
-    <fieldset><legend>Triệu chứng</legend><div className="chips">{[...new Set([...symptomList, ...(old?.symptoms ?? [])])].map(x =>
-      <label className="chip" key={x}><input name="symptom" type="checkbox" value={x} defaultChecked={old?.symptoms.includes(x)} />{x}</label>)}</div></fieldset>
+    <fieldset><legend>Triệu chứng</legend><div className="symptom-grid">{[...new Set([...symptomIcons.keys(), ...(old?.symptoms ?? [])])].map(x => {
+      const Icon = symptomIcons.get(x) ?? CirclePlus
+      return <label className="symptom-tile" key={x}><input name="symptom" type="checkbox" value={x}
+        defaultChecked={old?.symptoms.includes(x)} /><Icon size={22} aria-hidden="true" />{x}</label>
+    })}</div></fieldset>
     <Field label="Ghi chú"><textarea name="note" rows={3} maxLength={3000} defaultValue={old?.note} /></Field>
     <details><summary>Que thử LH và nhiệt độ cơ bản</summary><div className="two">
       <Field label="Kết quả LH"><select name="lh" defaultValue={old?.lh}>{choices(['Âm tính', 'Dương tính', 'Không rõ'])}</select></Field>

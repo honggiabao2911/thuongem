@@ -2,11 +2,15 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ArrowDownRight, ArrowRight, Bell, BookHeart, CalendarDays, ChartNoAxesColumnIncreasing, ChevronLeft,
-  ChevronRight, CircleHelp, Droplet, Flower2, Heart, HeartPulse, House, LockKeyhole, Plus, Settings2, Sparkles, WifiOff } from 'lucide-react'
+  ChevronRight, CircleHelp, Droplet, Flower2, Heart, HeartPulse, House, LockKeyhole, Plus, Smile, Settings2, Sparkles, WifiOff } from 'lucide-react'
 import { add, dayAt, diff, fmt, onPeriod, plain, prediction, sorted, validatePeriods } from '../shared/domain.ts'
 import type { Data, Period } from '../shared/domain.ts'
 import { EntryForm, Field, Modal, PeriodForm, ProfileFields, profile, str } from './forms.tsx'
 import { estimateNote, Information, SettingsPage } from './settings.tsx'
+import { CheckIn } from './checkin.tsx'
+import { LockScreen, PrivacySettings, usePrivacy } from './privacy.tsx'
+import type { Privacy } from './privacy.tsx'
+import type { Controller } from './useDevice.ts'
 import { HealthGuide } from './health.tsx'
 import { useDevice } from './useDevice.ts'
 import './style.css'
@@ -16,7 +20,7 @@ const tabs = [
   { name: 'Nhật ký', icon: BookHeart }, { name: 'Thống kê', icon: ChartNoAxesColumnIncreasing }, { name: 'Cài đặt', icon: Settings2 },
 ] as const
 type Tab = typeof tabs[number]['name']
-type Editor = { type: 'day' | 'period' | 'journal'; day: string; old?: Period; ending?: boolean } | { type: 'info' | 'health' }
+type Editor = { type: 'day' | 'period' | 'journal' | 'checkin'; day: string; old?: Period; ending?: boolean } | { type: 'info' | 'health' }
 
 function Setup({ data, save }: { data: Data; save: (data: Data) => Promise<void> }) {
   const [history, setHistory] = useState<number[]>([])
@@ -71,15 +75,46 @@ const phaseLabels = [
   { type: 'ov', symbol: '✧', name: 'Rụng trứng dự kiến' },
   { type: 'fertile', symbol: '≈', name: 'Có khả năng thụ thai (ước tính)' },
   { type: 'entry', symbol: '▣', name: 'Có nhật ký' },
+  { type: 'spotting', symbol: '◇', name: 'Ra máu lấm tấm' },
+  { type: 'symptoms', symbol: '✚', name: 'Có triệu chứng' },
+  { type: 'mood', symbol: '♡', name: 'Có cảm xúc' },
 ] as const
 function markers(data: Data, day: string, today: string, p: ReturnType<typeof prediction>) {
   const valid = p.next && p.next >= today
+  const entry = data.entries.find(item => item.date === day)
   const flags = [
     onPeriod(data.periods, day, today), Boolean(valid && p.next && day >= p.next && day <= add(p.next, (p.duration ?? 1) - 1)),
     Boolean(valid && p.ov === day), Boolean(valid && p.fertile && day >= p.fertile.start && day <= p.fertile.end),
-    data.entries.some(e => e.date === day),
+    Boolean(entry), entry?.flow === 'Lấm tấm', Boolean(entry?.symptoms.length || entry?.pain), Boolean(entry?.mood),
   ]
   return phaseLabels.filter((_, index) => flags[index])
+}
+const weekdays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
+function DayButton({ day, today, marks, outside, select }: {
+  day: string; today: string; marks: ReturnType<typeof markers>; outside?: boolean; select: (day: string) => void
+}) {
+  const phase = marks.find(mark => ['actual', 'expected', 'ov', 'fertile'].includes(mark.type))
+  const signals = marks.filter(mark => ['entry', 'spotting', 'symptoms', 'mood'].includes(mark.type))
+  const description = [fmt(day, { day: 'numeric', month: 'numeric', year: 'numeric' }),
+    ...(day === today ? ['Hôm nay'] : []), ...marks.map(mark => mark.name)].join(', ')
+  return <button className={['calendar-day', outside ? 'outside' : '', day === today ? 'current-day' : '', phase?.type ?? ''].join(' ')}
+    onClick={() => select(day)} aria-label={description} aria-current={day === today ? 'date' : undefined}>
+    <span className="day-number" aria-hidden="true">{plain(day).day}{phase && <small>{phase.symbol}</small>}</span>
+    <span className="day-marks" aria-hidden="true">{signals.map(mark => <span key={mark.type} className={mark.type}>{mark.symbol}</span>)}</span>
+  </button>
+}
+function WeekStrip({ data, today, select }: { data: Data; today: string; select: (day: string) => void }) {
+  const start = add(today, 1 - plain(today).dayOfWeek)
+  const p = prediction(data)
+  return <section className="card week-card" aria-label="Tuần này">
+    <div className="week-grid">
+      {weekdays.map((label, index) => {
+        const day = add(start, index)
+        return <div key={day}><span className="weekday">{label}</span>
+          <DayButton day={day} today={today} marks={markers(data, day, today, p)} select={select} /></div>
+      })}
+    </div>
+  </section>
 }
 function Calendar({ data, today, select }: { data: Data; today: string; select: (day: string) => void }) {
   const [month, setMonth] = useState(today.slice(0, 7) + '-01')
@@ -88,21 +123,26 @@ function Calendar({ data, today, select }: { data: Data; today: string; select: 
   const p = prediction(data)
   return <section className="card stack">
     <div className="month-header"><button className="icon-btn" aria-label="Tháng trước" onClick={() => setMonth(first.subtract({ months: 1 }).toString())}><ChevronLeft /></button>
-      <h2>{fmt(month, { month: 'long', year: 'numeric' })}</h2>
+      <div className="month-title"><h2>{fmt(month, { month: 'long', year: 'numeric' })}</h2>
+      {month !== today.slice(0, 7) + '-01' && <button onClick={() => setMonth(today.slice(0, 7) + '-01')}>Về tháng này</button>}</div>
       <button className="icon-btn" aria-label="Tháng sau" onClick={() => setMonth(first.add({ months: 1 }).toString())}><ChevronRight /></button></div>
     <div className="calendar">
-      {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(day => <div className="weekday" key={day}>{day}</div>)}
-      {days.map(day => {
-        const marks = markers(data, day, today, p)
-        return <button key={day} className={['calendar-day', day.slice(0, 7) !== month.slice(0, 7) ? 'outside' : '',
-          day === today ? 'current-day' : '', marks[0]?.type ?? ''].join(' ')} onClick={() => select(day)}
-          aria-label={fmt(day, { day: 'numeric', month: 'numeric', year: 'numeric' }) + (marks.length ? ', ' + marks.map(m => m.name).join(', ') : '')}>
-          <span>{plain(day).day}</span><span className="day-marks" aria-hidden="true">{marks.map(mark => <span key={mark.type} className={mark.type}>{mark.symbol}</span>)}</span></button>
-      })}
+      {weekdays.map(day => <div className="weekday" key={day}>{day}</div>)}
+      {days.map(day => <DayButton key={day} day={day} today={today} marks={markers(data, day, today, p)}
+        outside={day.slice(0, 7) !== month.slice(0, 7)} select={select} />)}
     </div>
     <div className="legend">{phaseLabels.map(m => <span key={m.type}><b className={m.type}>{m.symbol}</b> {m.name}</span>)}</div>
     <p className="muted small">{estimateNote}</p>
   </section>
+}
+function DayRecord({ entry }: { entry?: Data['entries'][number] }) {
+  if (!entry) return null
+  const rows = [
+    ['Tâm trạng', entry.mood], ['Triệu chứng', entry.symptoms.join(', ')], ['Lượng máu', entry.flow],
+    ['Mức đau', entry.pain !== undefined ? entry.pain + '/10' : undefined], ['Ghi chú', entry.note],
+  ].filter(([, value]) => value)
+  if (!rows.length) return null
+  return <dl className="day-record">{rows.map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{value}</dd></div>)}</dl>
 }
 function PeriodList({ data, open }: { data: Data; open: (period: Period) => void }) {
   const periods = sorted(data.periods).reverse()
@@ -137,8 +177,8 @@ function Stats({ data, open }: { data: Data; open: (period: Period) => void }) {
     <PeriodList data={data} open={open} />
   </div>
 }
-function Today({ data, today, begin, end, diary, info, health, settings, ignore }: {
-  data: Data; today: string; begin: () => void; end?: () => void; diary: () => void; info: () => void; health: () => void; settings: () => void; ignore: () => void
+function Today({ data, today, begin, end, diary, checkin, selectDay, info, health, settings, ignore }: {
+  data: Data; today: string; begin: () => void; end?: () => void; diary: () => void; checkin: () => void; selectDay: (day: string) => void; info: () => void; health: () => void; settings: () => void; ignore: () => void
 }) {
   const p = prediction(data)
   const active = onPeriod(data.periods, today, today)
@@ -153,7 +193,9 @@ function Today({ data, today, begin, end, diary, info, health, settings, ignore 
     left !== undefined && left >= 0 && left <= 4 ? 'Bạn có thể chuẩn bị sẵn sản phẩm kinh nguyệt và những món đồ giúp mình thoải mái.' :
     nearOv ? 'Ngày rụng trứng chỉ là ước tính. Nếu muốn, bạn có thể ghi lại dấu hiệu cơ thể trong nhật ký.' :
     'Dành một chút thời gian nghỉ ngơi, uống nước hoặc ghi lại cảm nhận hôm nay nếu bạn muốn.'
+  const todayEntry = data.entries.find(entry => entry.date === today)
   return <div className="today-grid">
+    <WeekStrip data={data} today={today} select={selectDay} />
     <section className="card hero">
       <div className="hero-top"><span className="hero-label"><Droplet size={15} /> Nhịp chu kỳ</span><button className="icon-btn subtle" aria-label="Cách tính dự đoán" onClick={info}><CircleHelp size={19} /></button></div>
       <div className="hero-content">
@@ -172,6 +214,14 @@ function Today({ data, today, begin, end, diary, info, health, settings, ignore 
         <button className={end ? '' : 'primary'} onClick={begin}><Plus size={17} /> Bắt đầu kỳ kinh</button>
         {left !== undefined && left < 0 && data.ignored !== p.next && <button onClick={ignore}>Bỏ qua dự kiến này</button>}
       </div>
+    </section>
+    <section className="card checkin-card">
+      <div className="tile-icon rose"><Smile size={22} /></div>
+      <div><h2>Hôm nay bạn cảm thấy thế nào?</h2>
+        <p>{todayEntry?.mood || todayEntry?.symptoms.length ?
+          [todayEntry.mood, ...todayEntry.symptoms.slice(0, 3)].filter(Boolean).join(' · ') :
+          'Chọn cảm xúc, triệu chứng và mức đau của bạn.'}</p></div>
+      <button className="primary" onClick={checkin}>{todayEntry ? 'Cập nhật cảm nhận' : 'Ghi cảm nhận'}</button>
     </section>
     <section className="card compact-card"><div className="tile-icon lavender"><Sparkles size={20} /></div><div><h2>Rụng trứng dự kiến</h2>
       <p>{p.ov && p.next! >= today ? fmt(p.ov) + ' · ước tính theo lịch' : 'Chưa đủ dữ liệu ổn định để hiện ngày cụ thể.'}</p></div></section>
@@ -202,7 +252,13 @@ function Journal({ data, today, edit }: { data: Data; today: string; edit: (day:
 }
 
 function App() {
+  const privacy = usePrivacy()
   const controller = useDevice()
+  if (privacy.locked) return <LockScreen privacy={privacy} />
+  return <Workspace controller={controller} privacy={privacy} />
+}
+
+function Workspace({ controller, privacy }: { controller: Controller; privacy: Privacy }) {
   const data = controller.saved?.data
   const [tab, setTab] = useState<Tab>('Hôm nay')
   const [editor, setEditor] = useState<Editor>()
@@ -237,12 +293,13 @@ function App() {
   const today = dayAt(todayTick, data.settings.zone)
   const openPeriod = (p: Period) => setEditor({ type: 'period', old: p, day: p.start })
   const openJournal = (day: string) => setEditor({ type: 'journal', day })
+  const openCheckIn = (day: string) => setEditor({ type: 'checkin', day })
   const active = data.periods.find(p => !p.end)
   const p = prediction(data)
   const close = () => setEditor(undefined)
   const editTitle = editor?.type === 'health' ? 'Chăm sóc sức khỏe' : editor?.type === 'info' ? 'Thông tin' : editor?.type === 'period' ?
     (editor.ending ? 'Kết thúc kỳ kinh' : editor.old ? 'Sửa kỳ kinh' : 'Ghi kỳ kinh') :
-    editor?.type === 'journal' ? 'Nhật ký · ' + fmt(editor.day) : editor?.type === 'day' ? fmt(editor.day, { day: 'numeric', month: 'long', year: 'numeric' }) : ''
+    editor?.type === 'checkin' ? 'Cảm nhận · ' + fmt(editor.day) : editor?.type === 'journal' ? 'Nhật ký · ' + fmt(editor.day) : editor?.type === 'day' ? fmt(editor.day, { day: 'numeric', month: 'long', year: 'numeric' }) : ''
   const descriptions: Record<Exclude<Tab, 'Hôm nay'>, string> = {
     Lịch: 'Xem các ngày đã ghi nhận và các mốc dự kiến.',
     'Nhật ký': 'Ghi lại những điều bạn muốn theo dõi.',
@@ -252,8 +309,9 @@ function App() {
   return <>
     <header className="topbar"><div className="top-inner">
       <button className="brand" onClick={() => navigate('Hôm nay')}><span className="brand-icon"><Flower2 size={21} /></span><span>{data.settings.appName}</span></button>
+      <div className="top-tools">{privacy.enabled && <button className="icon-btn subtle" aria-label="Khóa nhanh" onClick={privacy.lock}><LockKeyhole size={20} /></button>}
       <button className="top-action" onClick={() => data.setup ? navigate('Cài đặt') : setEditor({ type: 'info' })}>
-        {data.setup ? <><Bell size={19} /><span>Lời nhắc</span></> : <><CircleHelp size={19} /><span>Thông tin</span></>}</button>
+        {data.setup ? <><Bell size={19} /><span>Lời nhắc</span></> : <><CircleHelp size={19} /><span>Thông tin</span></>}</button></div>
     </div></header>
     <main className={'shell' + (!data.setup ? ' setup-shell' : '')}>
       {!controller.online && <div className="notice offline" role="status"><WifiOff size={17} /> Đang offline. Dữ liệu vẫn lưu trên máy.{controller.pending ? ' Lịch nhắc chưa đồng bộ.' : ''}</div>}
@@ -266,13 +324,13 @@ function App() {
         </div>
         {tab === 'Hôm nay' && <Today data={data} today={today} begin={() => setEditor({ type: 'period', day: today })}
           end={active ? () => setEditor({ type: 'period', day: today, old: active, ending: true }) : undefined}
-          diary={() => openJournal(today)} info={() => setEditor({ type: 'info' })} health={() => setEditor({ type: 'health' })} settings={() => navigate('Cài đặt')}
+          diary={() => openJournal(today)} checkin={() => openCheckIn(today)} selectDay={day => setEditor({ type: 'day', day })} info={() => setEditor({ type: 'info' })} health={() => setEditor({ type: 'health' })} settings={() => navigate('Cài đặt')}
           ignore={() => void controller.save(old => ({ ...old, ignored: p.next })).catch(notifyError)} />}
         {tab === 'Lịch' && <div className="stack"><Calendar data={data} today={today} select={day => setEditor({ type: 'day', day })} />
           <PeriodList data={data} open={openPeriod} /></div>}
         {tab === 'Nhật ký' && <Journal data={data} today={today} edit={openJournal} />}
         {tab === 'Thống kê' && <Stats data={data} open={openPeriod} />}
-        {tab === 'Cài đặt' && <SettingsPage data={data} controller={controller} />}
+        {tab === 'Cài đặt' && <div className="stack"><PrivacySettings privacy={privacy} /><SettingsPage data={data} controller={controller} /></div>}
         <div className="privacy-footer"><LockKeyhole size={14} /> Nhật ký lưu trên thiết bị</div>
       </>}
     </main>
@@ -295,9 +353,13 @@ function App() {
           if (!confirm('Xóa nhật ký ngày này?')) return
           void controller.save(old => ({ ...old, entries: old.entries.filter(e => e.date !== editor.day) })).then(close).catch(notifyError)
         }} />}
+      {editor.type === 'checkin' && <CheckIn key={editor.day} day={editor.day} old={data.entries.find(e => e.date === editor.day)}
+        save={async entry => { await controller.save(old => ({ ...old, entries: [...old.entries.filter(e => e.date !== entry.date), entry] })); close() }} />}
       {editor.type === 'day' && <div className="stack">
         <p>{markers(data, editor.day, today, p).map(m => m.symbol + ' ' + m.name).join(' · ') || 'Chưa có dữ liệu cho ngày này.'}</p>
+        <DayRecord entry={data.entries.find(e => e.date === editor.day)} />
         {editor.day <= today ? <div className="actions">
+          <button onClick={() => openCheckIn(editor.day)}><Smile size={17} /> Ghi cảm nhận</button>
           <button className="primary" onClick={() => setEditor({
             type: 'period', day: editor.day, old: data.periods.find(p => p.start <= editor.day && (p.end ?? today) >= editor.day),
           })}><Droplet size={17} /> {onPeriod(data.periods, editor.day, today) ? 'Sửa kỳ kinh' : 'Thêm kỳ kinh'}</button>

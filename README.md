@@ -138,3 +138,9 @@ Bản bàn giao chưa gắn tên miền, máy chủ VPS, khóa VAPID của bạn
 ## Bản GitHub Pages
 
 Chạy `npm ci` rồi `npm run build:pages` để tạo `docs/` cho địa chỉ `/thuongem/`. Bản tĩnh dùng IndexedDB và có thể xuất lịch .ics.
+
+### Ghi cảm nhận và khóa màn hình
+
+Từ Hôm nay, chọn **Ghi cảm nhận**, hoặc chạm một ngày trong lịch. Bốn câu hỏi tùy chọn ghi cảm xúc, triệu chứng, mức đau và lượng máu. Mở **Nhật ký** để thêm chi tiết.
+
+Trong **Cài đặt → Khóa màn hình**, có thể đặt mã PIN 6 số. Màn hình khóa xuất hiện khi bạn khóa thủ công, chuyển app xuống nền hoặc mở lại. Đây là lớp che giao diện, và dữ liệu trong IndexedDB cùng tệp sao lưu không được mã hóa. App lưu bộ kiểm tra PIN đã băm với salt trên trình duyệt và không có cơ chế khôi phục PIN.
