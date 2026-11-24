@@ -134,3 +134,7 @@ Bản bàn giao chưa gắn tên miền, máy chủ VPS, khóa VAPID của bạn
 | `tests/` | Kiểm thử Node và Chromium |
 
 [React + TypeScript](https://react.dev/learn/typescript) · [Vite](https://vite.dev/guide/) · [MDN IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) · [Node SQLite](https://nodejs.org/api/sqlite.html) · [web-push](https://github.com/web-push-libs/web-push) · [Temporal polyfill](https://github.com/js-temporal/temporal-polyfill) · [Zod](https://zod.dev/) · [Lucide](https://lucide.dev/guide/react) · [Playwright](https://playwright.dev/docs/emulation)
+
+## Bản GitHub Pages
+
+Chạy `npm ci` rồi `npm run build:pages` để tạo `docs/` cho địa chỉ `/thuongem/`. Bản tĩnh dùng IndexedDB và có thể xuất lịch .ics.

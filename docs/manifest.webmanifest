@@ -1,1 +1,31 @@
-{"id": "/thuongem/", "name": "Thương Em", "short_name": "Thương Em", "lang": "vi", "start_url": "/thuongem/", "scope": "/thuongem/", "display": "standalone", "background_color": "#fcf8f5", "theme_color": "#fcf8f5", "icons": [{"src": "/thuongem/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"}, {"src": "/thuongem/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}, {"src": "/thuongem/icon-mask.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}]}
+{
+  "id": "/thuongem/",
+  "name": "Thương Em",
+  "short_name": "Thương Em",
+  "lang": "vi",
+  "start_url": "/thuongem/",
+  "scope": "/thuongem/",
+  "display": "standalone",
+  "background_color": "#fcf8f5",
+  "theme_color": "#fcf8f5",
+  "icons": [
+    {
+      "src": "/thuongem/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/thuongem/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/thuongem/icon-mask.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

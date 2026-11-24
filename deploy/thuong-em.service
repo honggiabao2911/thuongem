@@ -1,0 +1,16 @@
+[Unit]
+Description=Thuong Em PWA
+After=network.target
+
+[Service]
+User=thuongem
+Group=thuongem
+WorkingDirectory=/opt/thuong-em
+ExecStart=/usr/bin/node --env-file=/opt/thuong-em/.env server/main.ts
+Restart=on-failure
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

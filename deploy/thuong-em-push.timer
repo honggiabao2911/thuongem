@@ -1,0 +1,11 @@
+[Unit]
+Description=Kiem tra lich gui Thuong Em moi phut
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+AccuracySec=1s
+Persistent=true
+Unit=thuong-em-push.service
+
+[Install]
+WantedBy=timers.target

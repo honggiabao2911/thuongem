@@ -1,0 +1,15 @@
+[Unit]
+Description=Gui Web Push den han cho Thuong Em
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=thuongem
+Group=thuongem
+WorkingDirectory=/opt/thuong-em
+ExecStart=/usr/bin/node --env-file=/opt/thuong-em/.env server/main.ts tick
+TimeoutStartSec=55
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true

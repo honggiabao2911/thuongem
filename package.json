@@ -13,12 +13,14 @@
     "build": "tsc --noEmit && vite build && node deploy/precache.mjs",
     "test": "node --test tests/*.test.ts",
     "test:e2e": "playwright test",
-    "keys": "web-push generate-vapid-keys --json"
+    "keys": "web-push generate-vapid-keys --json",
+    "build:pages": "tsc --noEmit && vite build --base=/thuongem/ --outDir docs && node deploy/precache.mjs docs /thuongem/"
   },
   "keywords": [],
   "author": "",
   "type": "module",
   "dependencies": {
+    "@fontsource-variable/noto-sans": "^5.3.0",
     "@js-temporal/polyfill": "^0.5.1",
     "lucide-react": "^1.79.0",
     "react": "^19.3.1",
